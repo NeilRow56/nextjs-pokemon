@@ -4,28 +4,27 @@ import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import Link from 'next/link';
 
-const Home = () => {
 
-  // Somewhere to store the data 
 
-  const [ pokemon, setPokemon ] = useState([])
+export async function getStaticProps() {
 
-  // Get the data, but only once 
-  
-  useEffect(() => {
-    async function getPokemon() {
-      const resp = await fetch(
+const resp = await fetch(
 
         // Data fetched from online storage
 
         "https://jherr-pokemon.s3.us-west-1.amazonaws.com/index.json");
-        setPokemon(await resp.json())
 
-         
-    }
-    getPokemon()
 
-  }, [] )
+return {
+  props: {
+    pokemon: await resp.json()
+  }
+}
+}
+
+const Home = ({ pokemon }) => {
+
+  
 
   return (
     <div className={styles.container}>

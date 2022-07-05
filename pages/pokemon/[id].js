@@ -1,42 +1,43 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { useEffect, useState } from 'react'
-import { useRouter } from 'next/router'
+import React from "react";
 import Head from "next/head";
-import styles from "../../styles/PokemonDetails.module.css"
-import Link from 'next/link';
+import Link from "next/link";
+import styles from "../../styles/PokemonDetails.module.css";
 
 
-export default function PokemonDetails () {
 
-    const { query: {id}} = useRouter()
+export async function getStaticPaths() {
+  const resp = await fetch(
+    "https://jherr-pokemon.s3.us-west-1.amazonaws.com/index.json"
+  );
+  const pokemon = await resp.json();
 
-    // Somewhere to store the data 
+  return {
+    paths: pokemon.map((pokemon) => ({
+      params: { id: pokemon.id.toString() },
+    })),
+    fallback: false,
+  };
+}
 
-  const [ pokemon, setPokemon ] = useState(null)
+export async function getStaticProps({ params }) {
+  const resp = await fetch(
+    `https://jherr-pokemon.s3.us-west-1.amazonaws.com/pokemon/${params.id}.json`
+  );
 
-  // Get the data, but only once 
-  
-  useEffect(() => {
-    async function getPokemon() {
-      const resp = await fetch(
+  return {
+    props: {
+      pokemon: await resp.json(),
+    },
+    // revalidate: 30,
+  };
+}
 
-        // Data fetched from online storage
 
-        `https://jherr-pokemon.s3.us-west-1.amazonaws.com/pokemon/${id}.json`);
-        setPokemon(await resp.json())
+export default function PokemonDetails ({ pokemon }) {
 
-         
-    }
-    if(id)  {
-        getPokemon()
-    }
-    
+   
 
-  }, [id] )
-
-  if(!pokemon) {
-    return null
-  }
        
   return (
     <div>
@@ -52,6 +53,8 @@ export default function PokemonDetails () {
         <div>
           <img
             className={styles.picture}
+            w={300}
+            h={300}
             src={`https://jherr-pokemon.s3.us-west-1.amazonaws.com/${pokemon.image}`}
             alt={pokemon.name.english}
           />
